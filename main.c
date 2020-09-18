@@ -9,6 +9,7 @@
 
 
 char * inputarr[10];
+int * arguments;
 int * status;
 
 void type_prompt();
@@ -19,9 +20,12 @@ int main() {
     while (TRUE) {                                /* repeat forever */
         type_prompt();                          /* display promt on the screen */
 
-        char *command = NULL;
-        char * parameters = NULL;
-        read_command(command, parameters);      /* read input from terminal */
+        char command[20];
+        char parameters[80];
+        read_command(&command, &parameters);      /* read input from terminal */
+
+        printf("%s\n", *command);
+        printf("%s\n", *parameters);
 
         if (fork() != 0) {                         /* fork off child process */
             /* parent code*/
@@ -43,13 +47,14 @@ void type_prompt(){
     char* input= malloc(sizeof(char)*100);
     gets(input);
 
-    int i = 0;
+   arguments = malloc(sizeof(int)*2);
+   arguments[0] = 0;
 
     char *inputtokens = strtok(input," ");
 
     while(inputtokens != NULL) {
-        inputarr[i] = inputtokens;
-        i++;
+        inputarr[arguments[0]] = inputtokens;
+        arguments[0]++;
         inputtokens = strtok(NULL," ");
     }
 
@@ -58,5 +63,21 @@ void type_prompt(){
 
 void read_command(char *command , char *parameters){
     command = inputarr[0];
-    parameters = inputarr[1];
+    printf("%s\n",command);
+
+    printf("%d\n",arguments[0]);
+
+    char * param = calloc(81, sizeof(char));
+    for (int i = 1; i < arguments[0] ; ++i) {
+        strcat(param,inputarr[i]);
+        if (i!=(arguments[0]-1)) {
+            strcat(param, " ");
+        }
+    }
+
+    parameters = param;
+
+
+
+
 }

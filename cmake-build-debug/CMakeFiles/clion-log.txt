@@ -1,4 +1,4 @@
-/home/volkan/Downloads/clion-2020.2.1/bin/cmake/linux/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" /home/volkan/CLionProjects/shell
+/home/volkan/Downloads/clion-2020.2.3/bin/cmake/linux/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" /home/volkan/CLionProjects/shell
 -- Configuring done
 -- Generating done
 -- Build files have been written to: /home/volkan/CLionProjects/shell/cmake-build-debug
