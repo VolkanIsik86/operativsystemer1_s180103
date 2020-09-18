@@ -1,0 +1,22 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/volkan/CLionProjects/shell/main.c
+stdio.h
+-
+stdbool.h
+-
+unistd.h
+-
+wait.h
+-
+stdlib.h
+-
+string.h
+-
+
