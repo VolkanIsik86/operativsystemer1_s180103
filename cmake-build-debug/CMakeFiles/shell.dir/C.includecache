@@ -9,13 +9,13 @@
 /home/volkan/CLionProjects/shell/main.c
 stdio.h
 -
-stdbool.h
+stdlib.h
 -
 unistd.h
 -
-wait.h
+sys/wait.h
 -
-stdlib.h
+sys/types.h
 -
 string.h
 -
