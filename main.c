@@ -8,31 +8,41 @@
 #define TRUE 1
 
 void type_prompt();
-void read_command(char * shellInput[]);
+void read_command(char * shellInput[] , int * isPipe);
 
 int main() {
 
     while (TRUE) {                                /* repeat forever */
+        int pipefd[2];
+        char recv[256];
+        int isPipe = 0;
         int pid;
+
         type_prompt();                          /* display promt on the screen */
 
         char *shellInput[20];
 
-        read_command(shellInput);      /* read input from terminal */
+        read_command(shellInput,&isPipe);      /* read input from terminal */
 
-        int exit = strcmp(shellInput[0],"exit");
-        if(exit == 0){
+        int leave = strcmp(shellInput[0],"exit");
+        if(leave == 0){
             break;
         }
 
-        pid = fork();
-        if (pid > 0) {                         /* fork off child process */
-            /* parent code*/
-           pid = wait(NULL);             /* wait for child to exit */
-           printf("Type new command or type exit to leave\n");
-        } else {
+        pid = fork();   /* fork off child process */
+
+        if (pid<0){
+            perror("fork");
+            exit(1);
+        }
+        else if (pid == 0) {
             /*child code */
             execvp(shellInput[0], shellInput);      /* execute command */
+
+        } else {
+            /* parent code*/
+            pid = wait(NULL);             /* wait for child to exit */
+            printf("Type new command or type exit to leave\n");
         }
     }
     return 0;
@@ -41,7 +51,7 @@ int main() {
 void type_prompt() {
     printf("$ ");
 }
-    void read_command(char *shellInput[]) {
+    void read_command(char *shellInput[] , int * isPipe) {
 
         int maxlength = 100;
         char *input = malloc(sizeof(char) * maxlength);
@@ -62,5 +72,10 @@ void type_prompt() {
         }
         shellInput[wordCount] = NULL;
 
+        for (int i = 0; i < wordCount ; ++i) {
+            if(!strcmp(shellInput[i],"|")){
+                *isPipe=1;
+            }
+        }
     free(input);
     }
