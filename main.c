@@ -61,12 +61,12 @@ int main() {
              * hvis der er en pipe så pipe funktionen kaldes for pipekanallerne
              */
             if (isPipe) {
-                pipe(pipefd);
+                pipe(pipefd); /* https://www.geeksforgeeks.org/pipe-system-call/ */
             }
             /**
              * En child process forkes dette gør at den nu værende process kopiers
              */
-            pid1 = fork();   /* fork off child process */
+            pid1 = fork();   /* https://www.geeksforgeeks.org/fork-system-call/ */
             /**
              * fejl håndtering
              */
@@ -83,14 +83,14 @@ int main() {
                      *  dup2 kaldes med pipe write kanalen og strout gives som argument
                      *  begge kanaler lukkes efterfølgende især write kanalen så reader i et andet process kan finde EOF
                      */
-                    dup2(pipefd[1], STDOUT_FILENO);
+                    dup2(pipefd[1], STDOUT_FILENO); /* https://www.geeksforgeeks.org/dup-dup2-linux-system-call/ */
                     close(pipefd[1]);
                     close(pipefd[0]);
                 }
                 /**
                  * execvp funktionen kører en række af argumenter og erstatter alt koden efter.
                  */
-                execvp(shellInput[0], shellInput);      /* execute command */
+                execvp(shellInput[0], shellInput);      /* inspireret fra Bhupjit */
 
             } else if (isPipe) {
 
