@@ -2,18 +2,18 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/wait.h>
-#include <sys/types.h>
 #include <string.h>
 
 #define TRUE 1
 
 void type_prompt();
-void read_command(char * shellInput[] ,char *pipeInput[], int * isPipe);
+
+void read_command(char *shellInput[], char *pipeInput[], int *isPipe);
 
 int main() {
-/**
- * Koden gentager uendeligt
- */
+    /**
+     * Koden gentager uendeligt
+     */
     while (TRUE) {
         /**
          * pipefd[2] = Pipe kanalerne
@@ -60,7 +60,7 @@ int main() {
             /**
              * hvis der er en pipe så pipe funktionen kaldes for pipekanallerne
              */
-            if(isPipe) {
+            if (isPipe) {
                 pipe(pipefd);
             }
             /**
@@ -77,60 +77,61 @@ int main() {
                 /**
                  * childprocess koden
                  */
-                if(isPipe) {
+                if (isPipe) {
                     /**
                      *  output kanallen duplikeres og begge kanaller lukkes derefter
+                     *  dup2 kaldes med pipe write kanalen og strout gives som argument
+                     *  begge kanaler lukkes efterfølgende især write kanalen så reader i et andet process kan finde EOF
                      */
                     dup2(pipefd[1], STDOUT_FILENO);
                     close(pipefd[1]);
                     close(pipefd[0]);
                 }
                 /**
-                 * execvp funktionen kører en røkke af argumenter og erstatter alt koden efter.
+                 * execvp funktionen kører en række af argumenter og erstatter alt koden efter.
                  */
                 execvp(shellInput[0], shellInput);      /* execute command */
 
-            } else if(isPipe){
+            } else if (isPipe) {
 
+                /**
+                 * hvis isPipe af sandt så forkes en ny child process
+                 */
+                pid2 = fork();
+                if (pid2 == 0) {
                     /**
-                     * hvis isPipe af sandt så forkes en ny child process
+                     * childprocess 2 kode:
                      */
-                    pid2 = fork();
-                    if (pid2 == 0) {
-                        /**
-                         * childprocess 2 kode:
-                         */
-                        dup2(pipefd[0], STDIN_FILENO);
-                        close(pipefd[1]);
-                        close(pipefd[0]);
-                        execvp(pipeInput[0], pipeInput);
+                    dup2(pipefd[0], STDIN_FILENO);
+                    close(pipefd[1]);
+                    close(pipefd[0]);
+                    execvp(pipeInput[0], pipeInput);
 
-                    } else {
-                        /**
-                         * parentkode hvis isPipe af sandt
-                         */
-                        close(pipefd[0]);
-                        close(pipefd[1]);
-                        /**
-                         * venter på begge child processer kører færdig
-                         */
-                        waitpid(-1, NULL, 0);
-                        waitpid(-1, NULL, 0);/* wait for child to exit */
-                       // printf("Type new command or type exit to leave\n");
+                } else {
+                    /**
+                     * parentkode hvis isPipe af sandt
+                     */
+                    close(pipefd[0]);
+                    close(pipefd[1]);
+                    /**
+                     * venter på begge child processer kører færdig
+                     */
+                    waitpid(-1, NULL, 0);
+                    waitpid(-1, NULL, 0);/* wait for child to exit */
+                    // printf("Type new command or type exit to leave\n");
 
-                    }
+                }
 
 
-            } else{
+            } else {
                 /**
                  * parentkode uden pipe
                  */
                 wait(NULL);
-              //  printf("Type new command or type exit to leave\n");
+                //  printf("Type new command or type exit to leave\n");
             }
         }
     }
-    return 0;
 }
 
 void type_prompt() {
@@ -141,49 +142,67 @@ void type_prompt() {
     /**
      * returner nuværende mappe
      */
-    getcwd(directory,1000);
+    getcwd(directory, 1000);
     /**
      * ændrer farver på prompt
      */
     printf("\033[1;32m");
-    printf("%s:$ ",directory);
+    printf("%s:$ ", directory);
     printf("\33[0m");
 }
-    void read_command(char *shellInput[] ,char *pipeInput[], int * isPipe) {
 
-        int maxlength = 100;
-        char *input = malloc(sizeof(char) * maxlength);
-        int wordCount = 0;
-        int whereIsPipe = 0;
+void read_command(char *shellInput[], char *pipeInput[], int *isPipe) {
+    /**
+     * maxlength = maximum længde af en input
+     * *input allokerer plads i heap for input
+     * wordCount = variabel for at tælle antal argumenter
+     * whereIsPipe = indeholder pladsen for "|"
+     */
+    int maxlength = 100;
+    char *input = malloc(sizeof(char) * maxlength);
+    int wordCount = 0;
+    int whereIsPipe = 0;
+    /**
+     *  scanner input fra consolen.
+     */
+    scanf("%[^\n]%*c", input);  /* https://www.geeksforgeeks.org/taking-string-input-space-c-3-different-methods/   */
 
-        scanf("%[^\n]%*c",input);
+    /**
+     * flusher input og output stream
+     */
+    fflush(stdin);
+    fflush(stdout);
 
-       // fgets(input, 100, stdin);
-        fflush(stdin);
-        fflush(stdout);
+    /**
+     * *args = indeholder argumenter som delt med " " . strtok læser et string af gangen indtil den møder en ny " ".
+     * Linjen gennemgåes og kopiers til heap hvor shellinput indeholder pointer til hver string
+     */
+    char *args = strtok(input, " ");
 
-        char *args = strtok(input," ");
-
-        while (args != NULL ){
-            shellInput[wordCount] = strdup(args);
-            args = strtok(NULL," ");
-            wordCount++;
-        }
-        shellInput[wordCount] = NULL;
-
-        for (int i = 0; i < wordCount ; ++i) {
-            if(!strcmp(shellInput[i],"|")){
-                *isPipe=1;
-                whereIsPipe = i;
-            }
-        }
-
-        if(*isPipe){
-            shellInput[whereIsPipe] = NULL;
-            for (int i = 0; i < wordCount - whereIsPipe ; ++i) {
-                pipeInput[i] = shellInput[whereIsPipe+1+i];
-            }
-            pipeInput[(wordCount-whereIsPipe)+1] = NULL;
-        }
-    free(input);
+    while (args != NULL) {
+        shellInput[wordCount] = strdup(args);
+        args = strtok(NULL, " ");
+        wordCount++;
     }
+    shellInput[wordCount] = NULL;
+    /**
+     * "|" søges efter og pladsen gennem is whereIsPipe
+     */
+    for (int i = 0; i < wordCount; ++i) {
+        if (!strcmp(shellInput[i], "|")) {
+            *isPipe = 1;
+            whereIsPipe = i;
+        }
+    }
+    /**
+     * hvis der findes "|" så vil shellinput indeholde argumenter indtil pipe og pipeInput vil indeholde pipe argumenter
+     */
+    if (*isPipe) {
+        shellInput[whereIsPipe] = NULL;
+        for (int i = 0; i < wordCount - whereIsPipe; ++i) {
+            pipeInput[i] = shellInput[whereIsPipe + 1 + i];
+        }
+        pipeInput[(wordCount - whereIsPipe) + 1] = NULL;
+    }
+    free(input);
+}
