@@ -11,55 +11,122 @@ void type_prompt();
 void read_command(char * shellInput[] ,char *pipeInput[], int * isPipe);
 
 int main() {
-
-    while (TRUE) {                                /* repeat forever */
+/**
+ * Koden gentager uendeligt
+ */
+    while (TRUE) {
+        /**
+         * pipefd[2] = Pipe kanalerne
+         * isPipe = variabel som ændres i tilfælde af pipe
+         * pid1,pid2 = process id'er initaliseres.
+         */
         int pipefd[2];
-        char recv[256];
         int isPipe = 0;
-        int pid;
-
+        int pid1;
+        int pid2;
+        /**
+         * en prompt på skærmen
+         */
         type_prompt();                          /* display promt on the screen */
-
+        /**
+         * *shellInput[20] = en char array pointer (2 dimentionelle array). Indeholder argumenter deres eskeveres.
+         * *pipeInput[20] = en char array pointer (2 dimentionelle array). Indeholder pipe argumenter
+         */
         char *shellInput[20];
         char *pipeInput[20];
 
+        /**
+         * funktionen som indlæser vores input og seperer shellinput og pipeinput i tilfæle af pipe
+         */
         read_command(shellInput, pipeInput, &isPipe);      /* read input from terminal */
 
 
-        //exit
+        /**
+         * exit funktionen for vores shell
+         */
         int leave = strcmp(shellInput[0], "exit");
         if (leave == 0) {
             exit(0);
-            break;
+
         }
 
+        /**
+         * Hardcoded cd funktion benyttet c's egen funktion til at skifte nuværende mappe.
+         */
         int cd = strcmp(shellInput[0], "cd");
         if (cd == 0) {
             chdir(shellInput[1]);
         } else {
-
-            //fork
-            pid = fork();   /* fork off child process */
-
-            if (pid < 0) {
+            /**
+             * hvis der er en pipe så pipe funktionen kaldes for pipekanallerne
+             */
+            if(isPipe) {
+                pipe(pipefd);
+            }
+            /**
+             * En child process forkes dette gør at den nu værende process kopiers
+             */
+            pid1 = fork();   /* fork off child process */
+            /**
+             * fejl håndtering
+             */
+            if (pid1 < 0) {
                 perror("fork");
                 exit(1);
-            } else if (pid == 0) {
-                /*child code */
-                //pipe
-                if (isPipe) {
-                    pipe(pipefd);
-                    fork();
-
+            } else if (pid1 == 0) {
+                /**
+                 * childprocess koden
+                 */
+                if(isPipe) {
+                    /**
+                     *  output kanallen duplikeres og begge kanaller lukkes derefter
+                     */
+                    dup2(pipefd[1], STDOUT_FILENO);
+                    close(pipefd[1]);
+                    close(pipefd[0]);
                 }
-
-                close(pipefd[0]);
+                /**
+                 * execvp funktionen kører en røkke af argumenter og erstatter alt koden efter.
+                 */
                 execvp(shellInput[0], shellInput);      /* execute command */
 
-            } else {
-                /* parent code*/
-                pid = wait(NULL);             /* wait for child to exit */
-                printf("Type new command or type exit to leave\n");
+            } else if(isPipe){
+
+                    /**
+                     * hvis isPipe af sandt så forkes en ny child process
+                     */
+                    pid2 = fork();
+                    if (pid2 == 0) {
+                        /**
+                         * childprocess 2 kode:
+                         */
+                        dup2(pipefd[0], STDIN_FILENO);
+                        close(pipefd[1]);
+                        close(pipefd[0]);
+                        execvp(pipeInput[0], pipeInput);
+
+                    } else {
+                        /**
+                         * parentkode hvis isPipe af sandt
+                         */
+                        close(pipefd[0]);
+                        close(pipefd[1]);
+                        /**
+                         * venter på begge child processer kører færdig
+                         */
+                        waitpid(-1, NULL, 0);
+                        waitpid(-1, NULL, 0);/* wait for child to exit */
+                       // printf("Type new command or type exit to leave\n");
+
+                    }
+
+
+            } else{
+                /**
+                 * parentkode uden pipe
+                 */
+                wait(NULL);
+              //  printf("Type new command or type exit to leave\n");
             }
         }
     }
@@ -67,8 +134,17 @@ int main() {
 }
 
 void type_prompt() {
+    /**
+     * allokerer plads for nuværende mappe sætning
+     */
     char directory[1000];
+    /**
+     * returner nuværende mappe
+     */
     getcwd(directory,1000);
+    /**
+     * ændrer farver på prompt
+     */
     printf("\033[1;32m");
     printf("%s:$ ",directory);
     printf("\33[0m");
@@ -109,15 +185,5 @@ void type_prompt() {
             }
             pipeInput[(wordCount-whereIsPipe)+1] = NULL;
         }
-
-//        for (int i = 0; i < whereIsPipe ; ++i) {
-//            printf("%s\n",shellInput[i]);
-//
-//        }
-//
-//        for (int i = 0; i < wordCount-whereIsPipe ; ++i) {
-//            printf("%s\n",pipeInput[i]);
-//        }
-
     free(input);
     }
