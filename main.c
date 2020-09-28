@@ -117,8 +117,9 @@ int main() {
                      * venter på begge child processer kører færdig
                      */
                     waitpid(-1, NULL, 0);
-                    waitpid(-1, NULL, 0);/* wait for child to exit */
-                    // printf("Type new command or type exit to leave\n");
+                    waitpid(-1, NULL, 0);
+                    free(*shellInput);
+                    free(*pipeInput);
 
                 }
 
@@ -128,7 +129,7 @@ int main() {
                  * parentkode uden pipe
                  */
                 wait(NULL);
-                //  printf("Type new command or type exit to leave\n");
+                free(*shellInput);
             }
         }
     }
