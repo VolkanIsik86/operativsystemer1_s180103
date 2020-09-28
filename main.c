@@ -146,6 +146,7 @@ void type_prompt() {
     getcwd(directory, 1000);
     /**
      * ændrer farver på prompt
+     * www.web.theurbanpenguin.com/adding-color-to-your-output-from-c
      */
     printf("\033[1;32m");
     printf("%s:$ ", directory);
