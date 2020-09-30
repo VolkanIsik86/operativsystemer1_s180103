@@ -1,0 +1,7 @@
+https://www.geeksforgeeks.org/pipe-system-call/  - Kadam Patel
+https://www.geeksforgeeks.org/fork-system-call/  - Kadam Patel
+https://www.geeksforgeeks.org/dup-dup2-linux-system-call/ - Mazhar Imam Khan
+execvp - inspireret fra Bhupjit simpleexec koden
+https://www.geeksforgeeks.org/taking-string-input-space-c-3-different-methods/ - Aditya Kumar
+https://linux.die.net/man/2/wait - Linux manpage
+http://web.theurbanpenguin.com/adding-color-to-your-output-from-c/ - Andres Mallet
