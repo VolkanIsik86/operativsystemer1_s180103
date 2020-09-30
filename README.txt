@@ -13,7 +13,8 @@ Programmet kan køres med ./a.out kommando.
 Brugeren vil blive præsenteret med nuværende mappe afsluttet med $:. På nuværende tidspunkt er den klar til at tag imod kommandoer.
 Programmet kan tage imod 100 karakter / 20 argumenter.
 Skriv exit for at afslutte programmet og skriv cd for at navigere imellem mapper.
-Programmet ville køre alle ekskevererbar filer i Path miljøet
+Programmet ville køre alle ekskevererbar filer i Path miljøet.
+Bruger inputtet kan kun indeholde en enkel pipe. 
 
 
 cd - command:
