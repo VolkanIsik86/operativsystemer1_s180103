@@ -5,7 +5,7 @@ Systemkrav:
 Unix baseret Operativsystem, c sproget installeret.
 
 Installation:
-Åbn en terminal og skriv: gcc shell.c
+Åbn en terminal og skriv: gcc main.c
 
 
 Brugermanual: 
